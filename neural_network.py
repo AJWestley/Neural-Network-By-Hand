@@ -15,7 +15,7 @@ class NeuralNet:
         weight_initialisation: str = 'auto',
         regression: bool = True
         ) -> None:
-        ''' Constructs a NeuralNetwork object 
+        ''' Constructs a NeuralNet object 
             
             Params:
             ---------
