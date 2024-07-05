@@ -1,7 +1,7 @@
 import numpy as np
-from ann_exceptions import NotInitialisedError
-from feed_forward import feed_forward
-from ann_utils import ActivationFunctions, WeightInit
+from utilities import ActivationFunctions, WeightInit
+from utilities.ANN_Exeptions import NotInitialisedError
+from utilities.FeedForward import feed_forward
 
 class NeuralNet:
     ''' A feed-forward neural network '''
@@ -52,7 +52,7 @@ class NeuralNet:
             Whether or not the network will be used for regression.
         '''
         
-        self.__topology = __process_hidden_layers(hidden_layers)
+        self.__topology = __format_hidden_layers(hidden_layers)
         self.__hidden_act = ActivationFunctions.hidden(hidden_layer_activation_function)
         self.__output_act = ActivationFunctions.output(output_layer_activation_function)
         self.__generator = WeightInit.generator(weight_initialisation, hidden_layer_activation_function)
@@ -112,7 +112,7 @@ class NeuralNet:
         self.biases = tuple([WeightInit.layer_biases(topology[i]) for i in range(1, len(topology))])
 
 
-def __process_hidden_layers(hidden_layers: tuple[int] | int) -> list[int]:
+def __format_hidden_layers(hidden_layers: tuple[int] | int) -> list[int]:
     ''' Performs type checking on the topology specification and reformats to a tuple '''
     
     if isinstance(hidden_layers, int):
