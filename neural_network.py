@@ -1,7 +1,7 @@
 import numpy as np
-from activation_functions import hidden_activation, output_activation
 from ann_exceptions import NotInitialisedError
 from feed_forward import feed_forward
+from ann_utils import ActivationFunctions, WeightInit
 
 class NeuralNet:
     ''' A feed-forward neural network '''
@@ -9,9 +9,10 @@ class NeuralNet:
     def __init__(
         self, 
         hidden_layers: tuple[int] | int, 
-        hidden_layer_activation_function: str = 'tanh',
+        hidden_layer_activation_function: str = 'relu',
         output_layer_activation_function: str = 'softmax',
         *,
+        weight_initialisation: str = 'auto',
         regression: bool = True
         ) -> None:
         ''' Constructs a NeuralNetwork object 
@@ -37,22 +38,30 @@ class NeuralNet:
             - 'sigmoid': Logistic Sigmoid (Reccommended for binary or multilabel classification)
             - 'softmax': SoftMax Function (Reccommended for multiclass classification)
             - 'identity': Passes through the input without applying an activation function (Reccommended for regression)
+            
+            weight_initialisation : str
+            The method by which to initialise the weights.
+            
+            Options:
+            - 'auto': A method will be chosen automatically.
+            - 'xavier': The normalised Xavier method
+            - 'he': The He method
+            - 'uniform': Uniform on the interval [-1, 1]
+            
+            regression: bool
+            Whether or not the network will be used for regression.
         '''
         
         self.__topology = __process_hidden_layers(hidden_layers)
-        self.__hidden_act = hidden_activation(hidden_layer_activation_function)
-        self.__output_act = output_activation(output_layer_activation_function)
+        self.__hidden_act = ActivationFunctions.hidden(hidden_layer_activation_function)
+        self.__output_act = ActivationFunctions.output(output_layer_activation_function)
+        self.__generator = WeightInit.generator(weight_initialisation, hidden_layer_activation_function)
         self.__reg = regression
         
         self.weights: tuple | None = None
         self.biases: tuple  | None = None
     
-    def predict(self, X: np.ndarray) -> np.ndarray:
-        ''' Predicts labels for the given data '''
-        
-        if self.__reg:
-            return self.probabilities(X)
-        return np.argmax(self.probabilities(X), axis=1)
+    # ----- Training ----- #
     
     def train(self, X: np.ndarray, Y: np.ndarray) -> None:
         ''' Initialises the weights and trains the network from scratch '''
@@ -66,6 +75,20 @@ class NeuralNet:
         self.initialise_network(input_size, output_size)
         self.continue_training(X, Y)
     
+    # TODO:
+    def continue_training(self, X: np.ndarray, Y: np.ndarray) -> None:
+        ''' Used to continue training when the model is already partially trained '''
+        pass
+    
+    # ----- Predicting ----- #
+    
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        ''' Predicts labels for the given data '''
+        
+        if self.__reg:
+            return self.probabilities(X)
+        return np.argmax(self.probabilities(X), axis=1)
+    
     def probabilities(self, X: np.ndarray) -> np.ndarray:
         ''' Runs the feed forward algorithm to get the output probabilities of the network '''
         
@@ -74,10 +97,7 @@ class NeuralNet:
         
         return feed_forward(X, self.weights, self.biases, self.__hidden_act, self.__output_act)
     
-    # TODO:
-    def continue_training(self, X: np.ndarray, Y: np.ndarray) -> None:
-        ''' Used to continue training when the model is already partially trained '''
-        pass
+    # ----- Initialisation ----- #
     
     def initialise_network(self, input_size: int, output_size: int) -> None:
         ''' Initialises the weights and biases for the network.
@@ -88,8 +108,8 @@ class NeuralNet:
         
         topology = [input_size] + self.__topology + [output_size]
         
-        self.weights = tuple([__init_weights(topology[i-1], topology[i]) for i in range(1, len(topology))])
-        self.biases = tuple([___init_biases(topology[i]) for i in range(1, len(topology))])
+        self.weights = tuple([WeightInit.layer_weights(topology[i-1], topology[i], self.__generator) for i in range(1, len(topology))])
+        self.biases = tuple([WeightInit.layer_biases(topology[i]) for i in range(1, len(topology))])
 
 
 def __process_hidden_layers(hidden_layers: tuple[int] | int) -> list[int]:
@@ -107,10 +127,3 @@ def __process_hidden_layers(hidden_layers: tuple[int] | int) -> list[int]:
         
     return list(hidden_layers)
 
-def __init_weights(in_size: int, out_size: int) -> np.ndarray:
-    ''' Generates a weight matrix for one hidden layer '''
-    return np.random.uniform(-1, 1, (in_size, out_size))
-
-def ___init_biases(size: int) -> np.ndarray:
-    ''' Generates a bias matrix for one hidden layer '''
-    return np.random.uniform(-1, 1, (size, 1))
