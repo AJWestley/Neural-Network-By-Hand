@@ -1,5 +1,6 @@
 import numpy as np
-from ann_utils import hidden_activation, output_activation, NotInitialisedError
+from activation_functions import hidden_activation, output_activation
+from ann_exceptions import NotInitialisedError
 from feed_forward import feed_forward
 
 class NeuralNet:
