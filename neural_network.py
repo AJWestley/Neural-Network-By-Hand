@@ -1,5 +1,5 @@
 import numpy as np
-from neural_net_utils import hidden_activation, output_activation, NotInitialisedError
+from ann_utils import hidden_activation, output_activation, NotInitialisedError
 from feed_forward import feed_forward
 
 class NeuralNet:
@@ -13,6 +13,30 @@ class NeuralNet:
         *,
         regression: bool = True
         ) -> None:
+        ''' Constructs a NeuralNetwork object 
+            
+            Params:
+            ---------
+            hidden_layers : tuple[int] | int
+                A tuple containing the number of neurons to be in each layer (or an int if there is to be one layer)
+            
+            hidden_layer_activation_function : str
+            The activation function to be used in hidden layer neurons.
+            
+            Options:
+            - 'sigmoid': Logistic Sigmoid
+            - 'relu': Rectified Linear Unit
+            - 'tanh': Hyperbolic Tan
+            - 'identity': Passes through the input without applying an activation function
+            
+            output_layer_activation_function : str
+            The activation function to be used in output neurons.
+            
+            Options:
+            - 'sigmoid': Logistic Sigmoid (Reccommended for binary or multilabel classification)
+            - 'softmax': SoftMax Function (Reccommended for multiclass classification)
+            - 'identity': Passes through the input without applying an activation function (Reccommended for regression)
+        '''
         
         self.__topology = __process_hidden_layers(hidden_layers)
         self.__hidden_act = hidden_activation(hidden_layer_activation_function)
@@ -24,6 +48,7 @@ class NeuralNet:
     
     def predict(self, X: np.ndarray) -> np.ndarray:
         ''' Predicts labels for the given data '''
+        
         if self.__reg:
             return self.probabilities(X)
         return np.argmax(self.probabilities(X), axis=1)
@@ -32,22 +57,24 @@ class NeuralNet:
         ''' Initialises the weights and trains the network from scratch '''
         
         _, input_size = X.shape
-        
         if self.__reg:
             output_size = 1
         else:
             output_size = len(np.unique(Y, axis=0))
         
         self.initialise_network(input_size, output_size)
-        self.add_train(X, Y)
+        self.continue_training(X, Y)
     
     def probabilities(self, X: np.ndarray) -> np.ndarray:
         ''' Runs the feed forward algorithm to get the output probabilities of the network '''
+        
         if self.weights is None or self.biases is None:
             raise NotInitialisedError('Cannot make predictions when the model has not yet been initialised')
+        
         return feed_forward(X, self.weights, self.biases, self.__hidden_act, self.__output_act)
     
-    def add_train(self, X: np.ndarray, Y: np.ndarray) -> None:
+    # TODO:
+    def continue_training(self, X: np.ndarray, Y: np.ndarray) -> None:
         ''' Used to continue training when the model is already partially trained '''
         pass
     
@@ -57,11 +84,12 @@ class NeuralNet:
             
             *Should only be used externally if you wish to experiment with an untrained network.*
         '''
+        
         topology = [input_size] + self.__topology + [output_size]
         
         self.weights = tuple([__init_weights(topology[i-1], topology[i]) for i in range(1, len(topology))])
         self.biases = tuple([___init_biases(topology[i]) for i in range(1, len(topology))])
-        
+
 
 def __process_hidden_layers(hidden_layers: tuple[int] | int) -> list[int]:
     ''' Performs type checking on the topology specification and reformats to a tuple '''
