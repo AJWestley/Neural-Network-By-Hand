@@ -1,6 +1,9 @@
 from typing import Callable
 import numpy as np
 
+class NotInitialisedError(RuntimeError):
+    pass
+
 def hidden_activation(chosen_function: str) -> Callable:
     ''' Provides the chosen activation function
         Options:

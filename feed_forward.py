@@ -1,24 +1,21 @@
 from typing import Callable
 import numpy as np
-import neural_net_utils
 
 def feed_forward(
     X: np.ndarray, 
-    W: tuple[np.ndarray], 
-    b: tuple[np.ndarray], 
-    hidden_activation: str = 'tanh', 
-    output_activation: str = 'softmax') -> np.ndarray:
+    W: tuple, 
+    b: tuple, 
+    hidden_activation: Callable, 
+    output_activation: Callable
+    ) -> np.ndarray:
     ''' Performs the feed forward prediction algorithm in its entirety '''
     
     __check_weight_formats(W, b)
     
-    hidden_layer_act = neural_net_utils.hidden_activation(hidden_activation)
-    output_layer_act = neural_net_utils.output_activation(output_activation)
-    
     current = X
     for i in range(len(W)-1):
-        current = __forward(current, W[i], b[i], hidden_layer_act)
-    return __predict(current, W[-1], b[-1], output_layer_act)
+        current = __forward(current, W[i], b[i], hidden_activation)
+    return __predict(current, W[-1], b[-1], output_activation)
 
 def __forward(
     X: np.ndarray, 
