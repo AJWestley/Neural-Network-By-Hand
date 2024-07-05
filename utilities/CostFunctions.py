@@ -79,7 +79,6 @@ def __mean_squared_error(
     expected_output: np.ndarray
     ) -> float:
     
-    n, _ = expected_output.shape
     raise NotImplementedError()
 
 def __mean_squared_error_derivative(
