@@ -15,6 +15,7 @@ class NeuralNet:
         output_layer_activation_function: str = 'softmax',
         *,
         weight_initialisation: str = 'auto',
+        cost_function: str = 'auto',
         learning_rate: float = 1e-3,
         regression: bool = False
         ) -> None:
@@ -65,12 +66,10 @@ class NeuralNet:
         self.weights: list | None = None
         self.biases: list  | None = None
         
-        # Cost Function TODO:
+        # Cost Function TODO: Dynamically choose cost functions
         self.cost = CategoricalCrossEntropy.cost
-        self.__hidden_weight_derivative = CategoricalCrossEntropy.hidden_layer_weight_derivative
-        self.__hidden_bias_derivative = CategoricalCrossEntropy.hidden_layer_bias_derivative
-        self.__output_weight_derivative = CategoricalCrossEntropy.output_layer_weight_derivative
-        self.__output_bias_derivative = CategoricalCrossEntropy.output_layer_bias_derivative
+        self.__weight_derivative = CategoricalCrossEntropy.weight_derivative
+        self.__bias_derivative = CategoricalCrossEntropy.bias_derivative
         
         # Other Parameters
         self.learning_rate = learning_rate
@@ -99,8 +98,7 @@ class NeuralNet:
         
         for _ in range(num_epochs):
             back(X, Y, self.weights, self.biases, self.learning_rate, self.__hidden_act, self.__output_act, 
-                    self.__output_weight_derivative, self.__output_bias_derivative, self.__hidden_weight_derivative,
-                    self.__hidden_bias_derivative, self.__activation_derivative, self.cost if track_cost else None)
+                    self.__weight_derivative, self.__bias_derivative, self.__activation_derivative)
         
     
     # ----- Predicting ----- #
