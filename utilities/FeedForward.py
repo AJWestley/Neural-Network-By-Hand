@@ -12,6 +12,7 @@ def feed_forward(
     
     __check_weight_formats(W, b)
     
+    # Propagate the signal through the network
     current = X
     for i in range(len(W)-1):
         current = __forward(current, W[i], b[i], hidden_activation)

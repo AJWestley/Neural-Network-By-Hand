@@ -3,7 +3,7 @@ from utilities import ActivationFunctions, WeightInit
 from utilities.ANN_Exeptions import NotInitialisedError
 from utilities.FeedForward import feed_forward
 from utilities.BackPropagation import back
-from utilities.CostFunctions import CategoricalCrossEntropy
+from utilities.CostFunctions import cost_function, weight_derivative, bias_derivative
 
 class NeuralNet:
     ''' A feed-forward neural network '''
@@ -11,11 +11,11 @@ class NeuralNet:
     def __init__(
         self, 
         hidden_layers: tuple[int] | int, 
-        hidden_layer_activation_function: str = 'relu',
-        output_layer_activation_function: str = 'softmax',
+        hidden_activation_function: str = 'relu',
+        output_activation_function: str = 'softmax',
         *,
         weight_initialisation: str = 'auto',
-        cost_function: str = 'auto',
+        cost_func: str = 'auto',
         learning_rate: float = 1e-3,
         regression: bool = False
         ) -> None:
@@ -57,24 +57,24 @@ class NeuralNet:
         '''
         
         # Activation Functions
-        self.__output_act = ActivationFunctions.output(output_layer_activation_function)
-        self.__hidden_act = ActivationFunctions.hidden(hidden_layer_activation_function)
-        self.__activation_derivative = ActivationFunctions.derivative(hidden_layer_activation_function)
+        self.__output_act = ActivationFunctions.output(output_activation_function)
+        self.__hidden_act = ActivationFunctions.hidden(hidden_activation_function)
+        self.__activation_derivative = ActivationFunctions.derivative(hidden_activation_function)
         
         # Initialise Topology
         self.__topology = NeuralNet.__format_hidden_layers(hidden_layers)
         self.weights: list | None = None
         self.biases: list  | None = None
         
-        # Cost Function TODO: Dynamically choose cost functions
-        self.cost = CategoricalCrossEntropy.cost
-        self.__weight_derivative = CategoricalCrossEntropy.weight_derivative
-        self.__bias_derivative = CategoricalCrossEntropy.bias_derivative
+        # Cost Function 
+        self.cost = cost_function(cost_func, output_activation_function)
+        self.__weight_derivative = weight_derivative(cost_func, output_activation_function)
+        self.__bias_derivative = bias_derivative(cost_func, output_activation_function)
         
         # Other Parameters
         self.learning_rate = learning_rate
         self.__reg = regression
-        self.__generator = WeightInit.generator(weight_initialisation, hidden_layer_activation_function)
+        self.__generator = WeightInit.generator(weight_initialisation, hidden_activation_function)
 
     # ----- Training ----- #
 
