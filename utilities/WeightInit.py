@@ -36,5 +36,5 @@ def __norm_xavier(in_size: int, out_size: int) -> np.ndarray:
 
 def __he(in_size: int, out_size: int) -> np.ndarray:
     ''' Generates a weight matrix according to He initialisation '''
-    std = np.sqrt(in_size)
-    return np.random.normal(0, std, (in_size, out_size))
+    std = np.sqrt(2.0 / in_size)
+    return np.random.normal(0.0, std, (in_size, out_size))

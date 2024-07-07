@@ -66,7 +66,7 @@ def __sigmoid(x: np.ndarray) -> np.ndarray:
 
 def __relu(x: np.ndarray) -> np.ndarray:
     ''' Rectified linear unit function of a given vector '''
-    return x * (x > 0)
+    return x * (x >= 0)
 
 def __identity(x: np.ndarray) -> np.ndarray:
     ''' Returns the input vector unchanged '''
@@ -82,7 +82,7 @@ def __sigmoid_derivative(Z: np.ndarray) -> np.ndarray:
 
 def __relu_derivative(Z: np.ndarray) -> np.ndarray:
     ''' Derivative of the rectified linear unit function '''
-    return (Z > 0)
+    return (Z >= 0)
 
 def __tanh_derivative(Z: np.ndarray) -> np.ndarray:
     ''' Derivative of the tanh function '''
