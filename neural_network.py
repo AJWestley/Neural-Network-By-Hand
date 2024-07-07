@@ -2,7 +2,7 @@ import numpy as np
 from utilities import ActivationFunctions, WeightInit
 from utilities.ANN_Exeptions import NotInitialisedError
 from utilities.FeedForward import feed_forward
-from utilities.BackProp import back
+from utilities.BackPropagation import back
 from utilities.CostFunctions import CategoricalCrossEntropy
 
 class NeuralNet:
@@ -75,10 +75,10 @@ class NeuralNet:
         self.learning_rate = learning_rate
         self.__reg = regression
         self.__generator = WeightInit.generator(weight_initialisation, hidden_layer_activation_function)
-    
+
     # ----- Training ----- #
-    
-    def train(self, X: np.ndarray, Y: np.ndarray, *, num_epochs: int = 1000, track_cost: bool = False) -> None:
+
+    def train(self, X: np.ndarray, Y: np.ndarray, *, num_epochs: int = 1000) -> None:
         ''' Initialises the weights and trains the network from scratch '''
         
         _, input_size = X.shape
@@ -88,9 +88,9 @@ class NeuralNet:
             output_size = len(np.unique(Y, axis=0))
         
         self.initialise_network(input_size, output_size)
-        self.continue_training(X, Y, num_epochs=num_epochs, track_cost=track_cost)
-    
-    def continue_training(self, X: np.ndarray, Y: np.ndarray, *, num_epochs: int = 1000, track_cost: bool = False) -> None:
+        self.continue_training(X, Y, num_epochs=num_epochs)
+
+    def continue_training(self, X: np.ndarray, Y: np.ndarray, *, num_epochs: int = 1000) -> None:
         ''' Used to continue training when the model is already partially trained '''
         
         if self.weights is None or self.biases is None:
@@ -99,17 +99,17 @@ class NeuralNet:
         for _ in range(num_epochs):
             back(X, Y, self.weights, self.biases, self.learning_rate, self.__hidden_act, self.__output_act, 
                     self.__weight_derivative, self.__bias_derivative, self.__activation_derivative)
-        
-    
+
+
     # ----- Predicting ----- #
-    
+
     def predict(self, X: np.ndarray) -> np.ndarray:
         ''' Predicts labels for the given data '''
         
         if self.__reg:
             return self.probabilities(X)
         return np.argmax(self.probabilities(X), axis=1)
-    
+
     def probabilities(self, X: np.ndarray) -> np.ndarray:
         ''' Runs the feed forward algorithm to get the output probabilities of the network '''
         
@@ -117,9 +117,9 @@ class NeuralNet:
             raise NotInitialisedError('Cannot make predictions when the model has not yet been initialised')
         
         return feed_forward(X, self.weights, self.biases, self.__hidden_act, self.__output_act)
-    
+
     # ----- Initialisation ----- #
-    
+
     def initialise_network(self, input_size: int, output_size: int) -> None:
         ''' Initialises the weights and biases for the network.
             Is used internally to set up the network.
@@ -131,6 +131,8 @@ class NeuralNet:
         
         self.weights = [WeightInit.layer_weights(topology[i-1], topology[i], self.__generator) for i in range(1, len(topology))]
         self.biases = [WeightInit.layer_biases(topology[i]) for i in range(1, len(topology))]
+
+    # ----- Utility Methods ----- #
 
     @staticmethod
     def __format_hidden_layers(hidden_layers: tuple[int] | int) -> list[int]:
@@ -145,6 +147,6 @@ class NeuralNet:
         for size in hidden_layers:
             if not isinstance(size, int):
                 raise TypeError(f"The hidden_layer tuple must contain only elements of type 'int', but an element was found of type '{type(size)}'")
-            
+        
         return list(hidden_layers)
 
