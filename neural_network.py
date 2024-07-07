@@ -33,7 +33,6 @@ class NeuralNet:
             - 'sigmoid': Logistic Sigmoid
             - 'relu': Rectified Linear Unit
             - 'tanh': Hyperbolic Tan
-            - 'identity': Passes through the input without applying an activation function
             
             output_layer_activation_function : str
             The activation function to be used in output neurons.
@@ -41,6 +40,7 @@ class NeuralNet:
             Options:
             - 'sigmoid': Logistic Sigmoid (Reccommended for binary or multilabel classification)
             - 'softmax': SoftMax Function (Reccommended for multiclass classification)
+            - 'relu': Rectified Linear Unit (Reccommended for regression)
             - 'identity': Passes through the input without applying an activation function (Reccommended for regression)
             
             weight_initialisation : str
@@ -51,6 +51,18 @@ class NeuralNet:
             - 'xavier': The normalised Xavier method
             - 'he': The He method
             - 'uniform': Uniform on the interval [-1, 1]
+            
+            cost_func : str
+            The cost function to optimise.
+            
+            Options:
+            - 'auto': A function will be chosen automatically.
+            - 'bce': Binary Cross Entropy
+            - 'cce': Categorical Cross Entropy
+            - 'mse': Mean Squared Error
+            
+            learning_rate : float
+            The models rate of learning during each epoch.
             
             regression: bool
             Whether or not the network will be used for regression.

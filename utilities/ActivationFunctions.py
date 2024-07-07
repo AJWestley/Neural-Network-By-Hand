@@ -24,6 +24,7 @@ def output(chosen_function: str) -> Callable:
         Options:
         - 'sigmoid': Logistic Sigmoid (Reccommended for binary or multilabel classification)
         - 'softmax': SoftMax Function (Reccommended for multiclass classification)
+        - 'relu': Rectified Linear Unit (Reccommended for regression)
         - 'identity': Passes through the input without applying an activation function (Reccommended for regression)
     '''
     match chosen_function:
@@ -31,6 +32,8 @@ def output(chosen_function: str) -> Callable:
             activation_func = __sigmoid
         case 'softmax':
             activation_func = __softmax
+        case 'relu':
+            activation_func = __relu
         case 'identity':
             activation_func = __identity
         case _:
