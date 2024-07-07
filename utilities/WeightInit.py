@@ -19,11 +19,11 @@ def generator(chosen_function: str, activation_function: str):
 
 def layer_weights(in_size: int, out_size: int, generator: Callable) -> np.ndarray:
     ''' Generates a weight matrix for one hidden layer '''
-    return generator(-1, 1, (in_size, out_size))
+    return generator(in_size, out_size)
 
 def layer_biases(size: int) -> np.ndarray:
     ''' Generates a bias matrix for one hidden layer '''
-    return np.zeros((size, 1))
+    return np.zeros((size))
 
 def __uniform(in_size: int, out_size: int) -> np.ndarray:
     ''' Generates a weight matrix uniform on the interval [-1, 1] '''

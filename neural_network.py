@@ -2,6 +2,8 @@ import numpy as np
 from utilities import ActivationFunctions, WeightInit
 from utilities.ANN_Exeptions import NotInitialisedError
 from utilities.FeedForward import feed_forward
+from utilities.BackProp import back
+from utilities.CostFunctions import CategoricalCrossEntropy
 
 class NeuralNet:
     ''' A feed-forward neural network '''
@@ -13,7 +15,8 @@ class NeuralNet:
         output_layer_activation_function: str = 'softmax',
         *,
         weight_initialisation: str = 'auto',
-        regression: bool = True
+        learning_rate: float = 1e-3,
+        regression: bool = False
         ) -> None:
         ''' Constructs a NeuralNet object 
             
@@ -52,18 +55,31 @@ class NeuralNet:
             Whether or not the network will be used for regression.
         '''
         
-        self.__topology = __format_hidden_layers(hidden_layers)
-        self.__hidden_act = ActivationFunctions.hidden(hidden_layer_activation_function)
+        # Activation Functions
         self.__output_act = ActivationFunctions.output(output_layer_activation_function)
-        self.__generator = WeightInit.generator(weight_initialisation, hidden_layer_activation_function)
-        self.__reg = regression
+        self.__hidden_act = ActivationFunctions.hidden(hidden_layer_activation_function)
+        self.__activation_derivative = ActivationFunctions.derivative(hidden_layer_activation_function)
         
-        self.weights: tuple | None = None
-        self.biases: tuple  | None = None
+        # Initialise Topology
+        self.__topology = NeuralNet.__format_hidden_layers(hidden_layers)
+        self.weights: list | None = None
+        self.biases: list  | None = None
+        
+        # Cost Function TODO:
+        self.cost = CategoricalCrossEntropy.cost
+        self.__hidden_weight_derivative = CategoricalCrossEntropy.hidden_layer_weight_derivative
+        self.__hidden_bias_derivative = CategoricalCrossEntropy.hidden_layer_bias_derivative
+        self.__output_weight_derivative = CategoricalCrossEntropy.output_layer_weight_derivative
+        self.__output_bias_derivative = CategoricalCrossEntropy.output_layer_bias_derivative
+        
+        # Other Parameters
+        self.learning_rate = learning_rate
+        self.__reg = regression
+        self.__generator = WeightInit.generator(weight_initialisation, hidden_layer_activation_function)
     
     # ----- Training ----- #
     
-    def train(self, X: np.ndarray, Y: np.ndarray) -> None:
+    def train(self, X: np.ndarray, Y: np.ndarray, *, num_epochs: int = 1000, track_cost: bool = False) -> None:
         ''' Initialises the weights and trains the network from scratch '''
         
         _, input_size = X.shape
@@ -73,12 +89,19 @@ class NeuralNet:
             output_size = len(np.unique(Y, axis=0))
         
         self.initialise_network(input_size, output_size)
-        self.continue_training(X, Y)
+        self.continue_training(X, Y, num_epochs=num_epochs, track_cost=track_cost)
     
-    # TODO:
-    def continue_training(self, X: np.ndarray, Y: np.ndarray) -> None:
+    def continue_training(self, X: np.ndarray, Y: np.ndarray, *, num_epochs: int = 1000, track_cost: bool = False) -> None:
         ''' Used to continue training when the model is already partially trained '''
-        pass
+        
+        if self.weights is None or self.biases is None:
+            raise NotInitialisedError('Cannot make predictions when the model has not yet been initialised')
+        
+        for _ in range(num_epochs):
+            back(X, Y, self.weights, self.biases, self.learning_rate, self.__hidden_act, self.__output_act, 
+                    self.__output_weight_derivative, self.__output_bias_derivative, self.__hidden_weight_derivative,
+                    self.__hidden_bias_derivative, self.__activation_derivative, self.cost if track_cost else None)
+        
     
     # ----- Predicting ----- #
     
@@ -108,22 +131,22 @@ class NeuralNet:
         
         topology = [input_size] + self.__topology + [output_size]
         
-        self.weights = tuple([WeightInit.layer_weights(topology[i-1], topology[i], self.__generator) for i in range(1, len(topology))])
-        self.biases = tuple([WeightInit.layer_biases(topology[i]) for i in range(1, len(topology))])
+        self.weights = [WeightInit.layer_weights(topology[i-1], topology[i], self.__generator) for i in range(1, len(topology))]
+        self.biases = [WeightInit.layer_biases(topology[i]) for i in range(1, len(topology))]
 
-
-def __format_hidden_layers(hidden_layers: tuple[int] | int) -> list[int]:
-    ''' Performs type checking on the topology specification and reformats to a tuple '''
-    
-    if isinstance(hidden_layers, int):
-        hidden_layers = (hidden_layers,)
-    
-    if not isinstance(hidden_layers, tuple):
-        raise TypeError(f"hidden_layers should be of type 'tuple' or 'int'. Provided value is of type '{type(hidden_layers)}'")
-    
-    for size in hidden_layers:
-        if not isinstance(size, int):
-            raise TypeError(f"The hidden_layer tuple must contain only elements of type 'int', but an element was found of type '{type(size)}'")
+    @staticmethod
+    def __format_hidden_layers(hidden_layers: tuple[int] | int) -> list[int]:
+        ''' Performs type checking on the topology specification and reformats to a tuple '''
         
-    return list(hidden_layers)
+        if isinstance(hidden_layers, int):
+            hidden_layers = (hidden_layers,)
+        
+        if not isinstance(hidden_layers, tuple):
+            raise TypeError(f"hidden_layers should be of type 'tuple' or 'int'. Provided value is of type '{type(hidden_layers)}'")
+        
+        for size in hidden_layers:
+            if not isinstance(size, int):
+                raise TypeError(f"The hidden_layer tuple must contain only elements of type 'int', but an element was found of type '{type(size)}'")
+            
+        return list(hidden_layers)
 
