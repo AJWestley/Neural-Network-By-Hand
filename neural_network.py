@@ -10,7 +10,7 @@ class NeuralNet:
     def __init__(
         self, 
         hidden_layers: tuple[int] | int, 
-        hidden_activation_function: str = 'sigmoid',
+        hidden_activation_function: str = 'tanh',
         output_activation_function: str = 'softmax',
         *,
         weight_initialisation: str = 'auto',
