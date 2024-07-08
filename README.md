@@ -1,6 +1,6 @@
 # Neural Network from Scratch
 
-A feed-forward neural network I made with just Numpy.
+A feed-forward neural network classification framework I made with just Numpy.
 I made this as a means of sinking my teeth into deep learning before learning any APIs.
 
 ## Usage
@@ -35,23 +35,9 @@ from neural_network import NeuralNet
     - `'xavier'`: The normalised Xavier method
     - `'he'`: The He method
     - `'uniform'`: Uniform on the interval [-1, 1]
-
-- **cost_func**: string
-    The cost function to optimise.
-    
-    Options:
-    - `'auto'` (*default*): A function will be chosen automatically.
-    - `'bce'`: Binary Cross Entropy (**Not Yet Supported**)
-    - `'cce'`: Categorical Cross Entropy
-    - `'mse'`: Mean Squared Error (**Not Yet Supported**)
-
 - **learning_rate**: float
     The models rate of learning during each epoch.
     `1e-3` by default.
-
-- **regression**: boolean
-    Whether or not the network will be used for regression.
-    `False` by default.
 
 ##### Example:
 

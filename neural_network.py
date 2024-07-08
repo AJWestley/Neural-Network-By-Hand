@@ -3,7 +3,6 @@ from utilities import ActivationFunctions, WeightInit
 from utilities.ANN_Exeptions import NotInitialisedError
 from utilities.FeedForward import feed_forward
 from utilities.BackPropagation import back
-from utilities.CostFunctions import cost_function, delta_update
 
 class NeuralNet:
     ''' A feed-forward neural network '''
@@ -11,11 +10,10 @@ class NeuralNet:
     def __init__(
         self, 
         hidden_layers: tuple[int] | int, 
-        hidden_activation_function: str = 'relu',
+        hidden_activation_function: str = 'sigmoid',
         output_activation_function: str = 'softmax',
         *,
         weight_initialisation: str = 'auto',
-        cost_func: str = 'auto',
         learning_rate: float = 1e-3,
         regression: bool = False
         ) -> None:
@@ -40,8 +38,6 @@ class NeuralNet:
             Options:
             - 'sigmoid': Logistic Sigmoid (Reccommended for binary or multilabel classification)
             - 'softmax': SoftMax Function (Reccommended for multiclass classification)
-            - 'relu': Rectified Linear Unit (Reccommended for regression)
-            - 'identity': Passes through the input without applying an activation function (Reccommended for regression)
             
             weight_initialisation : str
             The method by which to initialise the weights.
@@ -52,20 +48,9 @@ class NeuralNet:
             - 'he': The He method
             - 'uniform': Uniform on the interval [-1, 1]
             
-            cost_func : str
-            The cost function to optimise.
-            
-            Options:
-            - 'auto': A function will be chosen automatically.
-            - 'bce': Binary Cross Entropy
-            - 'cce': Categorical Cross Entropy
-            - 'mse': Mean Squared Error
-            
             learning_rate : float
             The models rate of learning during each epoch.
             
-            regression: bool
-            Whether or not the network will be used for regression.
         '''
         
         # Activation Functions
@@ -78,9 +63,6 @@ class NeuralNet:
         self.weights: list | None = None
         self.biases: list  | None = None
         
-        # Cost Function 
-        self.cost = cost_function(cost_func, output_activation_function)
-        
         # Other Parameters
         self.learning_rate = learning_rate
         self.__reg = regression
@@ -92,10 +74,7 @@ class NeuralNet:
         ''' Initialises the weights and trains the network from scratch '''
         
         _, input_size = X.shape
-        if self.__reg:
-            output_size = 1
-        else:
-            output_size = len(np.unique(Y, axis=0))
+        output_size = len(np.unique(Y, axis=0))
         
         self.initialise_network(input_size, output_size)
         self.continue_training(X, Y, num_epochs=num_epochs)
