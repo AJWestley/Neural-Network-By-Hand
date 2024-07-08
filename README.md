@@ -18,9 +18,9 @@ from neural_network import NeuralNet
 - **hidden_activation_function** : string (*optional*)
     Allows the activation function of the hidden layers to be chosen.
     Options:
-    - `'sigmoid'` (*default*): Logistic Sigmoid
+    - `'tanh'` (*default*): Hyperbolic Tan
+    - `'sigmoid'`: Logistic Sigmoid
     - `'relu'`: Rectified Linear Unit
-    - `'tanh'`: Hyperbolic Tan
 - **output_activation_function** : string (*optional*)
     Allows the output activation function to be chosen.
     Options:
@@ -38,6 +38,13 @@ from neural_network import NeuralNet
 - **learning_rate**: float
     The models rate of learning during each epoch.
     `1e-3` by default.
+- **model_type**: string
+    The type of model being trained.
+    Options:
+    - `'auto'` (*default*): Selects the model type automatically.
+    - `'multiclass'`: Multiclass classification
+    - `'binary'`: Binary or multilabel classification
+    - `'regression'`: Regression 
 
 ##### Example:
 

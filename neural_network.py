@@ -51,6 +51,15 @@ class NeuralNet:
             learning_rate : float
             The models rate of learning during each epoch.
             
+            model_type : str
+            The type of model being trained.
+            
+            Options:
+            - 'auto': Selects the model type automatically.
+            - 'multiclass': Multiclass classification
+            - 'binary': Binary or multilabel classification
+            - 'regression': Regression 
+            
         '''
         
         # Activation Functions
