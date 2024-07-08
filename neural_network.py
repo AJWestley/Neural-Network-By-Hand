@@ -15,7 +15,7 @@ class NeuralNet:
         *,
         weight_initialisation: str = 'auto',
         learning_rate: float = 1e-3,
-        regression: bool = False
+        model_type: str = 'auto'
         ) -> None:
         ''' Constructs a NeuralNet object 
             
@@ -65,7 +65,7 @@ class NeuralNet:
         
         # Other Parameters
         self.learning_rate = learning_rate
-        self.__reg = regression
+        self.__type = NeuralNet.__set_model_type(model_type, output_activation_function)
         self.__generator = WeightInit.generator(weight_initialisation, hidden_activation_function)
 
     # ----- Training ----- #
@@ -74,7 +74,7 @@ class NeuralNet:
         ''' Initialises the weights and trains the network from scratch '''
         
         _, input_size = X.shape
-        output_size = len(np.unique(Y, axis=0))
+        output_size = Y.shape[1] if len(Y.shape) > 1 else 1
         
         self.initialise_network(input_size, output_size)
         self.continue_training(X, Y, num_epochs=num_epochs)
@@ -95,9 +95,11 @@ class NeuralNet:
     def predict(self, X: np.ndarray) -> np.ndarray:
         ''' Predicts labels for the given data '''
         
-        if self.__reg:
-            return self.probabilities(X)
-        return np.argmax(self.probabilities(X), axis=1)
+        if self.__type == 'binary':
+            return np.round(self.probabilities(X)).astype(np.uint32)
+        if self.__type == 'multiclass':
+            return np.argmax(self.probabilities(X), axis=1)
+        return self.probabilities(X)
 
     def probabilities(self, X: np.ndarray) -> np.ndarray:
         ''' Runs the feed forward algorithm to get the output probabilities of the network '''
@@ -122,6 +124,9 @@ class NeuralNet:
         self.biases = [WeightInit.layer_biases(topology[i]) for i in range(1, len(topology))]
 
     # ----- Utility Methods ----- #
+    
+    def get_type(self):
+        return self.__type
 
     @staticmethod
     def __format_hidden_layers(hidden_layers: tuple[int] | int) -> list[int]:
@@ -139,3 +144,16 @@ class NeuralNet:
         
         return list(hidden_layers)
 
+    @staticmethod
+    def __set_model_type(type: str, output_act: str):
+        if type ==  'auto':
+                if output_act == 'softmax':
+                    return 'multiclass'
+                if output_act == 'sigmoid':
+                    return 'binary'
+                return 'regression'
+            
+        if type in ['multiclass', 'binary', 'regression']:
+            return type
+        
+        raise ValueError(f"Invalid model type: {type}.")
