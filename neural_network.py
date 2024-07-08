@@ -3,7 +3,7 @@ from utilities import ActivationFunctions, WeightInit
 from utilities.ANN_Exeptions import NotInitialisedError
 from utilities.FeedForward import feed_forward
 from utilities.BackPropagation import back
-from utilities.CostFunctions import cost_function, weight_derivative, bias_derivative
+from utilities.CostFunctions import cost_function, delta_update
 
 class NeuralNet:
     ''' A feed-forward neural network '''
@@ -80,8 +80,6 @@ class NeuralNet:
         
         # Cost Function 
         self.cost = cost_function(cost_func, output_activation_function)
-        self.__weight_derivative = weight_derivative(cost_func, output_activation_function)
-        self.__bias_derivative = bias_derivative(cost_func, output_activation_function)
         
         # Other Parameters
         self.learning_rate = learning_rate
@@ -109,8 +107,8 @@ class NeuralNet:
             raise NotInitialisedError('Cannot make predictions when the model has not yet been initialised')
         
         for _ in range(num_epochs):
-            back(X, Y, self.weights, self.biases, self.learning_rate, self.__hidden_act, self.__output_act, 
-                    self.__weight_derivative, self.__bias_derivative, self.__activation_derivative)
+            back(X, Y, self.weights, self.biases, self.learning_rate, self.__hidden_act, 
+                self.__output_act, self.__activation_derivative)
 
 
     # ----- Predicting ----- #

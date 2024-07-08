@@ -10,25 +10,25 @@ def cost_function(chosen_function: str, output_activation: str) -> Callable:
             if output_activation == 'softmax':
                 return CategoricalCrossEntropy.cost
             elif output_activation == 'sigmoid':
-                raise NotImplementedError()
+                return BinaryCrossEntropy.cost
             elif output_activation == 'identity':
-                raise NotImplementedError()
+                return MeanSquaredError.cost
             raise ValueError(f'Invalid activation function provided: {chosen_function}.')
         case 'bce':
-            raise NotImplementedError()
+            return BinaryCrossEntropy.cost
         case 'cce':
             return CategoricalCrossEntropy.cost
         case 'mse':
-            raise NotImplementedError()
+            return MeanSquaredError.cost
         case _:
             raise ValueError(f"The invalid cost function provided: {chosen_function}.")
 
-def weight_derivative(chosen_function: str, output_activation: str) -> Callable:
-    ''' Acts as a dictionary of cost function weight derivatives '''
+def delta_update(chosen_function: str, output_activation: str) -> Callable:
+    ''' Acts as a dictionary of cost function delta updates '''
     match chosen_function:
         case 'auto':
             if output_activation == 'softmax':
-                return CategoricalCrossEntropy.weight_derivative
+                return CategoricalCrossEntropy.delta_update
             elif output_activation == 'sigmoid':
                 raise NotImplementedError()
             elif output_activation == 'identity':
@@ -37,31 +37,12 @@ def weight_derivative(chosen_function: str, output_activation: str) -> Callable:
         case 'bce':
             raise NotImplementedError()
         case 'cce':
-            return CategoricalCrossEntropy.weight_derivative
+            return CategoricalCrossEntropy.delta_update
         case 'mse':
             raise NotImplementedError()
         case _:
             raise ValueError(f"The invalid cost function provided: {chosen_function}.")
 
-def bias_derivative(chosen_function: str, output_activation: str) -> Callable:
-    ''' Acts as a dictionary of cost functions '''
-    match chosen_function:
-        case 'auto':
-            if output_activation == 'softmax':
-                return CategoricalCrossEntropy.bias_derivative
-            elif output_activation == 'sigmoid':
-                raise NotImplementedError()
-            elif output_activation == 'identity':
-                raise NotImplementedError()
-            raise ValueError(f'Invalid activation function provided: {chosen_function}.')
-        case 'bce':
-            raise NotImplementedError()
-        case 'cce':
-            return CategoricalCrossEntropy.bias_derivative
-        case 'mse':
-            raise NotImplementedError()
-        case _:
-            raise ValueError(f"The invalid cost function provided: {chosen_function}.")
 
 class CategoricalCrossEntropy:
     ''' Utilities for Categorical Cross Entropy cost function '''
@@ -72,17 +53,14 @@ class CategoricalCrossEntropy:
         return (labels * np.log(predictions)).sum()
 
     @staticmethod
-    def weight_derivative(
+    def delta_update(
         X: np.ndarray, 
-        delta: np.ndarray
+        delta: np.ndarray,
+        weights: np.ndarray,
+        activation_derivative: Callable
         ) -> np.ndarray:
         ''' The derivative of this function with respect to a layer's weights '''
-        return X.T.dot(delta)
-
-    @staticmethod
-    def bias_derivative(delta: np.ndarray) -> np.ndarray:
-        ''' The derivative of this function with respect to a layer's biases '''
-        return delta.sum(axis=0)
+        return (delta.dot(weights.T)) * activation_derivative(X)
 
 class BinaryCrossEntropy:
     ''' Utilities for Binary Cross Entropy cost function '''
@@ -93,17 +71,14 @@ class BinaryCrossEntropy:
         return (labels * np.log(predictions) + (1 - labels) * np.log(1 - predictions)).sum()
 
     @staticmethod
-    def weight_derivative(
+    def delta_update(
         X: np.ndarray, 
-        delta: np.ndarray
+        delta: np.ndarray,
+        weights: np.ndarray,
+        activation_derivative: Callable
         ) -> np.ndarray:
         ''' The derivative of this function with respect to a layer's weights '''
-        return X.T.dot(delta)
-
-    @staticmethod
-    def bias_derivative(delta: np.ndarray) -> np.ndarray:
-        ''' The derivative of this function with respect to a layer's biases '''
-        return delta.sum(axis=0)
+        return (delta.dot(weights.T)) * activation_derivative(X)
 
 class MeanSquaredError:
     ''' Utilities for Mean Squared Error cost function '''
@@ -115,14 +90,11 @@ class MeanSquaredError:
         return - np.square(labels - predictions).sum() / n
 
     @staticmethod
-    def weight_derivative(
+    def delta_update(
         X: np.ndarray, 
-        delta: np.ndarray
+        delta: np.ndarray,
+        weights: np.ndarray,
+        activation_derivative: Callable
         ) -> np.ndarray:
         ''' The derivative of this function with respect to a layer's weights '''
-        return X.T.dot(delta)
-
-    @staticmethod
-    def bias_derivative(delta: np.ndarray) -> np.ndarray:
-        ''' The derivative of this function with respect to a layer's biases '''
-        return delta.sum(axis=0)
+        return (delta.dot(weights.T)) * activation_derivative(X)
