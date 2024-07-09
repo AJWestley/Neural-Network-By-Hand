@@ -28,6 +28,9 @@ from neural_network import NeuralNet
     - `'sigmoid'`: Logistic Sigmoid
     - `'relu'`: Rectified Linear Unit
     - `'identity'`: Input Passed Through Unchanged
+- **regularisation**: float (*kwarg*)
+    The regularisation parameter.
+    `0` by default.
 - **weight_initialisation**: string (*kwarg*)
     Chooses the distribution with which to initialise the model weights.
     Options:

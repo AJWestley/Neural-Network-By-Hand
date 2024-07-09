@@ -8,6 +8,7 @@ def back(
     weights: list, 
     biases: list, 
     learning_rate: float, 
+    regularisation: float,
     hidden_activation: Callable,
     output_activation: Callable,
     activation_derivative: Callable
@@ -20,10 +21,13 @@ def back(
     # Gradient Ascent
     delta = Y - layer_outputs[-1]
     n = len(weights) - 1
+    m, _ = X.shape
     
     for i in range(n, -1, -1):
-        weights[i] += learning_rate * __clipped(__weight_derivative(layer_outputs[i], delta))
-        biases[i] += learning_rate * __bias_derivative(delta)
+        dW = __weight_derivative(layer_outputs[i], delta)
+        db = __bias_derivative(delta)
+        weights[i] += learning_rate * (dW + (regularisation / m) * weights[i])
+        biases[i] += learning_rate * db
         delta = __delta_update(layer_outputs[i], delta, weights[i], activation_derivative)
 
 def __clipped(gradients: np.ndarray, min_threshold: float = 1e-3, max_threshold: float = 5) -> np.ndarray:

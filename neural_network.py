@@ -13,6 +13,7 @@ class NeuralNet:
         hidden_activation_function: str = 'tanh',
         output_activation_function: str = 'softmax',
         *,
+        regularisation: float = 0,
         weight_initialisation: str = 'auto',
         learning_rate: float = 1e-3,
         model_type: str = 'auto'
@@ -39,6 +40,9 @@ class NeuralNet:
             - 'sigmoid': Logistic Sigmoid (Reccommended for binary or multilabel classification)
             - 'softmax': SoftMax Function (Reccommended for multiclass classification)
             
+            regularisation : float
+            The regularisation parameter.
+            
             weight_initialisation : str
             The method by which to initialise the weights.
             
@@ -59,7 +63,6 @@ class NeuralNet:
             - 'multiclass': Multiclass classification
             - 'binary': Binary or multilabel classification
             - 'regression': Regression 
-            
         '''
         
         # Activation Functions
@@ -74,6 +77,7 @@ class NeuralNet:
         
         # Other Parameters
         self.learning_rate = learning_rate
+        self.__regularisation = regularisation
         self.__type = NeuralNet.__set_model_type(model_type, output_activation_function)
         self.__generator = WeightInit.generator(weight_initialisation, hidden_activation_function)
 
@@ -95,8 +99,8 @@ class NeuralNet:
             raise NotInitialisedError('Cannot make predictions when the model has not yet been initialised')
         
         for _ in range(num_epochs):
-            back(X, Y, self.weights, self.biases, self.learning_rate, self.__hidden_act, 
-                self.__output_act, self.__activation_derivative)
+            back(X, Y, self.weights, self.biases, self.learning_rate, self.__regularisation, 
+                self.__hidden_act, self.__output_act, self.__activation_derivative)
 
 
     # ----- Predicting ----- #
